@@ -11,16 +11,33 @@ const app = express();
 // ✅ CORS (DEV + PROD)
 const allowedOrigins = [
   "http://localhost:5173",
-  process.env.FRONTEND_URL,
-].filter(Boolean);
+  "http://127.0.0.1:5173",
+  "http://localhost:3000",
+  "http://127.0.0.1:3000",
+];
+
+if (process.env.FRONTEND_URL) {
+  // Normalize by stripping any trailing slash
+  const cleanUrl = process.env.FRONTEND_URL.replace(/\/$/, "");
+  allowedOrigins.push(cleanUrl);
+}
 
 app.use(
   cors({
     origin: (origin, callback) => {
-      if (!origin || allowedOrigins.includes(origin)) {
+      // Allow requests with no origin (like mobile apps, curl, or postman)
+      if (!origin) {
+        return callback(null, true);
+      }
+
+      // Check if origin matches allowedOrigins or is a Vercel deployment URL
+      const isAllowed = allowedOrigins.includes(origin) || 
+        (origin.startsWith("https://") && origin.endsWith(".vercel.app"));
+
+      if (isAllowed) {
         callback(null, true);
       } else {
-        callback(new Error("Not allowed by CORS"));
+        callback(new Error(`Not allowed by CORS: ${origin}`));
       }
     },
     credentials: true,
