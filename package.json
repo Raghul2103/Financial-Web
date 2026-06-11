@@ -1,7 +1,10 @@
 {
   "name": "financial-tracking-root",
   "private": true,
+  "workspaces": [
+    "frontend"
+  ],
   "engines": {
-    "node": "22.x"
+    "node": "20.x"
   }
 }
